@@ -1,0 +1,133 @@
+#include <ESP8266WiFi.h>
+#include <ESP8266WebServer.h>
+#include <WURe.h> 
+#include <LiquidCrystal_I2C.h> 
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+#include <Servo.h>  // sevo library 
+Servo myservo; // servo as object//
+const char* ssid = "IOT";
+const char* password = "0123456789";
+WiFiServer server(80);
+
+const int UR1=D5;
+const int UR2=D6;
+const int UR3=D7;
+///////////////////////////////////////  
+void setup(){
+  pinMode(UR1,INPUT);
+  pinMode(UR2,INPUT);
+  pinMode(UR3,INPUT);
+   WURe.begin(D2,D1);
+  myservo.attach(D8);
+  myservo.write(90); // default angle
+  Serial.begin(9600);
+  lcd.init();
+  lcd.backlight();
+  lcd.setCursor(0,0);  lcd.print("SMART PARKING ");
+  lcd.setCursor(0,1);  lcd.print("MANAGEMENT");
+   WiFi.begin ( ssid,password );
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("");
+  Serial.println("WiFi connected");
+  server.begin();
+  Serial.println("Web server running. Waiting for the ESP IP...");
+  delay(1000);
+  Serial.println(WiFi.localIP());
+  lcd.clear();
+  lcd.setCursor(0,0);  lcd.print("DEVICE IP");
+  lcd.setCursor(0,1);  lcd.print(WiFi.localIP());
+
+  delay(5000);
+  //lcd.clear();
+}
+
+void loop() {
+   myservo.write(90); // close the gate
+   if((digitalRead(UR1)==LOW)&&(digitalRead(UR2)==HIGH)&&(digitalRead(UR3)==HIGH)){
+   lcd.clear();
+   lcd.setCursor(0, 0);
+   lcd.print("AVAILABLE SLOTS");
+   lcd.setCursor(0, 1);
+   lcd.print("2  3");
+   delay(200);
+}
+else if((digitalRead(UR1)==HIGH)&&(digitalRead(UR2)==LOW)&&(digitalRead(UR3)==HIGH)){
+   lcd.clear();
+   lcd.setCursor(0, 0);
+   lcd.print("AVAILABLE SLOTS");
+   lcd.setCursor(0, 1);
+   lcd.print("1  3");
+   delay(200);
+}
+else if((digitalRead(UR1)==HIGH)&&(digitalRead(UR2)==HIGH)&&(digitalRead(UR3)==LOW)){
+   lcd.clear();
+   lcd.setCursor(0, 0);
+   lcd.print("AVAILABLE SLOTS");
+   lcd.setCursor(0, 1);
+   lcd.print("1  2");
+   delay(200);
+}
+else if((digitalRead(UR1)==LOW)&&(digitalRead(UR2)==LOW)&&(digitalRead(UR3)==HIGH)){
+   lcd.clear();
+   lcd.setCursor(0, 0);
+   lcd.print("AVAILABLE SLOTS");
+   lcd.setCursor(0, 1);
+   lcd.print("3");
+   delay(200);
+}
+else if((digitalRead(UR1)==HIGH)&&(digitalRead(UR2)==LOW)&&(digitalRead(UR3)==LOW)){
+   lcd.clear();
+   lcd.setCursor(0, 0);
+   lcd.print("AVAILABLE SLOTS");
+   lcd.setCursor(0, 1);
+   lcd.print("1");
+   delay(200);
+}
+else if((digitalRead(UR1)==LOW)&&(digitalRead(UR2)==HIGH)&&(digitalRead(UR3)==LOW)){
+   lcd.clear();
+   lcd.setCursor(0, 0);
+   lcd.print("AVAILABLE SLOTS");
+   lcd.setCursor(0, 1);
+   lcd.print("2");
+   delay(200);
+}
+else if((digitalRead(UR1)==LOW)&&(digitalRead(UR2)==LOW)&&(digitalRead(UR3)==LOW)){
+   lcd.clear();
+   lcd.setCursor(0, 0);
+   lcd.print("AVAILABLE SLOTS");
+   lcd.setCursor(0, 1);
+   lcd.print("PARKING FULL");
+   myservo.write(0); // close the gate
+   delay(1000);
+   delay(200);
+}
+
+else{
+   lcd.clear();
+   lcd.setCursor(0, 0);
+   lcd.print("AVAILABLE SLOTS");
+   lcd.setCursor(0, 1);
+   lcd.print("1 2  3"); 
+   delay(200);
+} 
+  WiFiClient client = server.available();
+  String request = client.readStringUntil('\r');  //flush the browser garbage data
+  client.flush();
+  client.println("<html lang='fr'><head><meta http-equiv='refresh' content='2' name='viewport' content='width=device-width, initial-scale=1'/>");
+  client.println("<br><br>");
+  client.println("<head></head><body><h1>SMART PARKING MANAGEMENT </h1>");
+  client.println("</h3><h3> SLOT 1: ");
+  if(digitalRead(D5)==LOW){client.println("FULL");}
+  else{client.println("EMPTY");}
+  client.println("</h3><h3>SLOT 2 : ");
+  if(digitalRead(D6)==LOW){client.println("FULL");}
+  else{client.println("EMPTY");}
+  client.println("</h3><h3>SLOT 3 : ");
+  if(digitalRead(D7)==LOW){client.println("FULL");}
+  else{client.println("EMPTY");}
+  delay(50);
+  client.println("</html>"); 
+}
