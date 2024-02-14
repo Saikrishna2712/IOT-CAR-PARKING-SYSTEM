@@ -1,2 +1,2 @@
 # IOT-CAR-PARKING-SYSTEM
-A model of vechicle parking system using Arduino board, Ultrasonic sensors.
+A model of vehicle parking system based on the Internet of Things (IoT) using Arduino and ultrasonic sensors. The total number of parking spaces that are available is displayed by this model's LED display. When an automobile is detected using ultrasonic sensors in a specific slot, the slots are updated and displayed appropriately. This project showed that it was possible to come up with a creative plan for maximising parking space usage while improving accessibility and user comfort.
